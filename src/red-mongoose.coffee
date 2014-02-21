@@ -1,5 +1,5 @@
 config = require './configuration'
-client = require './client'
+RedisCacheClient = require './clients/redis'
 
 class RedMongoose
   constructor: (@redisConfiguration, @mongoConfiguration) -> 
@@ -8,10 +8,8 @@ class RedMongoose
       "mongo": new config.MongoConfiguration @mongoConfiguration 
       
     @clients = 
-      "redis": new client.RedisCacheClient(@configurations.redis)
-      
-      
-      
+      "redis": new RedisCacheClient(@configurations.redis)
+  
   
 module.exports = RedMongoose
 
