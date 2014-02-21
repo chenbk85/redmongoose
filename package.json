@@ -1,0 +1,38 @@
+{
+    "name": "red-mongoose",
+    "version": "0.0.1",
+    "author": "Michael Schmatz <michael@codecombat.com> (http://github.com/schmatz)",
+    "description":"A caching system backed by Redis and MongoDB",
+    "keywords":["redis","MongoDB","cache"],
+    "homepage":"https://github.com/schmatz/red-mongoose",
+    "bugs": {
+        "url":"https://github.com/schmatz/red-mongoose/issues",
+        "email":"michael@codecombat.com"
+    },
+    "license":"MIT",
+    "dependencies": {
+        "redis":"",
+        "mongoose":"",
+        "lodash":""
+    },
+    "main":"lib/red-mongoose/red-mongoose",
+    "devDependencies": {
+        "jasmine-node": "",
+        "coffee-script": ">=1.3"
+    },
+    "engines": {
+        "node":">= 0.10.0"
+    },
+    "scripts": {
+        "test": "./node_modules/.bin/jasmine-node --coffee .",
+        "build": "./node_modules/.bin/coffee --bare --compile --output lib/red-mongoose src/*.coffee",
+        "prepublish": "./node_modules/.bin/coffee --bare --compile --output lib/red-mongoose src/*.coffee",
+        "postpublish": "rm -rf lib"
+    },
+    "repository": {
+        "type":"git",
+        "url":"https://github.com/schmatz/red-mongoose"
+    }
+
+
+}
