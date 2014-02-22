@@ -54,35 +54,16 @@ class MongoCacheClient extends CacheClient
   getNumberOfHashFields: (key, cb) ->
     @Hash.getNumberOfHashFields key, cb
     
+  getHashMultipleFields: (key, fields, cb) ->
+    @Hash.getMultipleHashFields key, fields, cb
+    
+  setHashMultipleFields: (key, hashUpdate, cb) ->
+    @Hash.setMultipleHashFields key, hashUpdate, cb
+
+  setHashFieldIfNotExists: (key, field, value, cb) ->
+    @Hash.setFieldOfHashAtKeyIfNotExists key, field, value, cb
   
 ###
-
-
-  #returns list of fields in hash
-  getAllHashFields: (key, cb) ->
-    @client.hkeys key, cb
-
-  #returns list of values in hash
-  getAllHashValues: (key, cb) ->
-    @client.hvals key, cb
-
-
-  getNumberOfHashFields: (key, cb) ->
-    @client.hlen key, cb
-
-  getHashMultipleFields: (key, fields, cb) ->
-    @client.hmget key, fields, (err, fieldValues) ->
-      if err? then return cb err, fieldValues
-      returnHash = {}
-      for index in [0...fields.length]
-        returnHash[fields[index]] = fieldValues[index]
-      cb err, returnHash
-
-
-  setHashMultipleFields: (key, hashUpdate, cb) ->
-    @client.hmset key, hashUpdate, cb
-
-
 
   setHashFieldIfNotExists: (key, field, value, cb) ->
     @client.hsetnx key, field, value, cb

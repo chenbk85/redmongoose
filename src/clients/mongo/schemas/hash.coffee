@@ -70,7 +70,30 @@ hashSchema.statics.getNumberOfHashFields = (key, cb) ->
     unless hash? then return cb err, 0
     cb err, (field for field of hash).length
     
+hashSchema.statics.getMultipleHashFields = (key, fields, cb) ->
+  selectString = ""
+  for field in fields
+    selectString += 'fields.' + field + " "
+  @findOne({key:key})
+    .select(selectString)
+    .lean()
+    .exec (err, doc) ->
+      if err? then return cb err, doc
+      unless doc? then return cb err, null
+      cb err, doc.fields
 
+hashSchema.statics.setMultipleHashFields = (key, hashUpdate, cb) ->
+  updateObject = 
+    '$set': {}
+  updateObject['$set']['fields.'+property] = value for property, value of hashUpdate
+  @update key:key, updateObject,{upsert:true}, cb
+  
+      
+hashSchema.statics.setFieldOfHashAtKeyIfNotExists = (key, field, value, cb) ->
+  @fieldExists key, field, (err, exists) =>
+    if err? then return cb err, 0
+    if exists then return cb err, 0
+    @setFieldOfHashAtKey key, field, value, cb
 
       
 module.exports = hashSchema

@@ -233,17 +233,74 @@ describe "RedMongoose", ->
                 expectedArray = ["blah","blah"]
                 expect(_.isEqual(expectedArray,results)).toBeTruthy()
                 done()
-        
-                
-            
-          
-      
-      
-      
-        
-            
-        
-          
-            
+
+        it "should correctly list the number of hash fields", (done) ->
+          client.setHashField "multiTest", "one","blah", ->
+            client.setHashField "multiTest","two","blah", ->
+              client.getNumberOfHashFields "multiTest", (err, numberFields) ->
+                expect(err).toBeNull()
+                expect(numberFields).toBe 2
+                done()
+
+        it "should correctly get multiple hash fields", (done) ->
+          client.setHashField "multiTest", "one","blah", ->
+            client.setHashField "multiTest","two","blah", ->
+              client.getHashMultipleFields "multiTest", ["one","two"], (err, fields) ->
+                expect(err).toBeNull()
+                expectedHash =
+                  "one":"blah"
+                  "two":"blah"
+                expect(_.isEqual(expectedHash,fields)).toBeTruthy()
+                done()
+
+        it "should correctly set multiple hash fields", (done) ->
+          hashUpdate =
+            "one":"blargh"
+            "two":"blah"
+          client.setHashMultipleFields "multiTest",hashUpdate, (err, success) ->
+            expect(err).toBeNull()
+            expect(success).toBeTruthy()
+            client.getHashField "multiTest","one",(err, field) ->
+              expect(err).toBeNull()
+              expect(field).toBe "blargh"
+              client.getHashField "multiTest","two",(err, field) ->
+                expect(err).toBeNull()
+                expect(field).toBe "blah"
+                done()
+
+        it "should correctly set a hash field correctly", (done) ->
+          client.setHashField "testKey", "testField","testValue", (err, result) ->
+            expect(err).toBeNull()
+            expect(result).toBeTruthy()
+
+            client.getHashField "testKey","testField", (err, field) ->
+              expect(err).toBeNull()
+              expect(field).toBe "testValue"
+              done()
+
+        it "should set a hash field if it doesn't exist", (done) ->
+          client.setHashFieldIfNotExists "testKeyNotExists", "testField","testValue", (err, result) ->
+            expect(err).toBeNull()
+            expect(result).toBeTruthy()
+            console.log "Done with first test!"
+            client.getHashField "testKeyNotExists","testField", (err, field) ->
+              expect(err).toBeNull()
+              expect(field).toBe "testValue"
+
+              done()
+              
+        it "should not set a hash field if not exists", (done) ->
+          client.setHashField "unique","testValue", "before", (err, result) ->
+            expect(err).toBeNull()
+            expect(result).toBeTruthy()
+
+            client.setHashFieldIfNotExists "unique","testValue","after",(err, result) ->
+              expect(err).toBeNull()
+              expect(result).toBeFalsy()
+
+              client.getHashField "unique","testValue",(err, field) ->
+                expect(err).toBeNull()
+                expect(field).toBe "before"
+                done()
         
            
