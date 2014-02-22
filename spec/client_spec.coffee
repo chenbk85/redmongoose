@@ -195,6 +195,44 @@ describe "RedMongoose", ->
               expect(err).toBeNull()
               expect(fieldValue).toBe "hello"
               done()
+        it "should get hash as object", (done) ->
+          client.setHashField "testKey", "testFieldOne", "hello", ->
+            client.setHashField "testKey", "testFieldTwo", "goodbye", ->
+              client.getHashAsObject "testKey", (err, hash) ->
+                expect(err).toBeNull()
+                expectedHash =
+                  "testFieldOne":"hello"
+                  "testFieldTwo":"goodbye"
+                expect(_.isEqual(hash,expectedHash)).toBe true
+                done()
+        it "should increment a hash field by one", (done) ->
+          client.setHashField "testKey","testField", 1, ->
+            client.incrementHashFieldByInteger "testKey","testField",5, (err, newValue) ->
+              expect(err).toBeNull()
+              expect(newValue).toBe(6)
+              done()
+        it "should increment a hash field by a float", (done) ->
+          client.setHashField "testKey","testField",2, ->
+            client.incrementHashFieldByFloat "testKey","testField", 2.2, (err, newValue) ->
+              expect(err).toBeNull()
+              expect(newValue).toBeCloseTo 4.2
+              done()
+        it "should correctly list hash fields", (done) ->
+          client.setHashField "multiTest", "one","blah", ->
+            client.setHashField "multiTest","two","blah", ->
+              client.getAllHashFields "multiTest", (err, results) ->
+                expect(err).toBeNull()
+                expectedArray = ["one","two"]
+                expect(_.isEqual(expectedArray,results)).toBeTruthy()
+                done()
+        it "should correctly list hash values", (done) ->
+          client.setHashField "multiTest", "one","blah", ->
+            client.setHashField "multiTest","two","blah", ->
+              client.getAllHashValues "multiTest", (err, results) ->
+                expect(err).toBeNull()
+                expectedArray = ["blah","blah"]
+                expect(_.isEqual(expectedArray,results)).toBeTruthy()
+                done()
         
                 
             

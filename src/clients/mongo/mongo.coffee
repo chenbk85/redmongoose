@@ -37,25 +37,26 @@ class MongoCacheClient extends CacheClient
   hashFieldExists: (key, field, cb) ->
     @Hash.fieldExists key, field, cb
   
-    
-###
-  hashFieldExists: (key, field, cb) ->
-    @client.hexists key, field, cb
-
-  #returns the value of the field or nil
-  getHashField: (key, field, cb) ->
-    @client.hget key, field, cb
-
-  #returns an object of the hash
   getHashAsObject: (key, cb) ->
-    @client.hgetall key, cb
-
-  #returns field after increment
+    @Hash.getEntireHash key, cb
+  
   incrementHashFieldByInteger: (key, field, integer, cb) ->
-    @client.hincrby key, field, integer, cb
-
+    @Hash.incrementField key, field, Math.round(integer), cb
+  
   incrementHashFieldByFloat: (key, field, float, cb) ->
-    @client.hincrbyfloat key, field, float, cb
+    @Hash.incrementField key, field, float, cb
+
+  getAllHashFields: (key, cb) ->
+    @Hash.getListOfFields key, cb
+  
+  getAllHashValues: (key, cb) ->
+    @Hash.getListOfValues key, cb
+  getNumberOfHashFields: (key, cb) ->
+    @Hash.getNumberOfHashFields key, cb
+    
+  
+###
+
 
   #returns list of fields in hash
   getAllHashFields: (key, cb) ->
