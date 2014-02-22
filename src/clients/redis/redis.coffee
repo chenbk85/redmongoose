@@ -1,6 +1,6 @@
 redis = require 'redis'
 
-CacheClient = require './prototype'
+CacheClient = require './../prototype'
 
 class RedisCacheClient extends CacheClient
   connect: ->

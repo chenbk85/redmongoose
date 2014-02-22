@@ -1,29 +1,27 @@
 RedMongoose = require '../src/red-mongoose'
 _ = require 'lodash'
-RedisCacheClient = require '../src/clients/redis'
+RedisCacheClient = require '../src/clients/redis/redis'
+MongoCacheClient = require '../src/clients/mongo/mongo'
 
 describe "RedMongoose", ->
+  rm = new RedMongoose()
   describe "Redis", ->
     describe "client", ->
-      rm = null
-      client = null
+      client = rm.clients.redis
       beforeEach (done) ->
-        rm = new RedMongoose()
-        client = new RedisCacheClient(rm.configurations.redis)
-        client.setupListener 'ready', ->
-          client.DESTROYALLKEYS ->
-            done()
-          
+        client.DESTROYALLKEYS ->
+          done()
+
       describe "hashes", ->
         it "should not detect the existence of a nonexistent field in a nonexistent hash", (done) ->
           client.hashFieldExists "testKey", "testField", (err, exists) ->
             expect(err).toBeNull()
-            expect(exists).toBeFalsy()
+            expect(exists).toBe 0
             done()
         it "should successfully create a hash field", (done) ->
           client.setHashField "testKey","testField","hello", (err, success) ->
             expect(err).toBeNull()
-            expect(success).toBeTruthy()
+            expect(success).toBe 1
             done()
         it "should successfully detect the existence of an existent field in an existent hash", (done) ->
           client.setHashField "testKey","testField","hello", (err, success)->
@@ -31,7 +29,7 @@ describe "RedMongoose", ->
             expect(success).toBeTruthy()
             client.hashFieldExists "testKey","testField", (err, exists) ->
               expect(err).toBeNull()
-              expect(exists).toBeTruthy()
+              expect(exists).toBe 1
               done()
         it "should delete keys", (done) ->
           client.setHashField "testKey","testField","hello", ->
@@ -153,12 +151,57 @@ describe "RedMongoose", ->
                 expect(field).toBe "before"
                 done()
                 
-              
-          
-
-
   describe "Mongo", ->
     describe "client", ->
+      client = rm.clients.mongo
+      
+      describe "hashes", ->
+        beforeEach (done) ->
+          client.setHashField "create", "the", "db and collection", (err, success) ->
+            client.destroyAllHashes ->
+              done()
+        it "should not detect the existence of a nonexistent field in a nonexistent hash", (done) ->
+          client.hashFieldExists "testKey", "testField", (err, exists) ->
+            expect(err).toBeNull()
+            expect(exists).toBe 0
+            done()
+        it "should successfully create a hash field", (done) ->
+          client.setHashField "testKey","testField","hello", (err, success) ->
+            expect(err).toBeNull()
+            expect(success).toBe 1
+            done()
+        it "should successfully detect the existence of an existent field in an existent hash", (done) ->
+          client.setHashField "testKey","testField","hello", (err, success)->
+            expect(err).toBeNull()
+            expect(success).toBeTruthy()
+            client.hashFieldExists "testKey","testField", (err, exists) ->
+              expect(err).toBeNull()
+              expect(exists).toBe 1
+              done()
+        it "should delete keys", (done) ->
+          client.setHashField "testKey","testField","hello", (err, success)->
+            expect(err).toBeNull()
+            expect(success).toBe 1
+            client.deleteHashField "testKey","testField", (err, numberOfFieldsRemoved) ->
+              expect(err).toBeNull()
+              expect(numberOfFieldsRemoved).toBe 1
+              client.hashFieldExists "testKey","testField", (err, exists) ->
+                done()
+                expect(err).toBeNull()
+                expect(exists).toBe 0
+        it "should get hash fields", (done) ->
+          client.setHashField "testKey","testField","hello", ->
+            client.getHashField "testKey","testField", (err, fieldValue) ->
+              expect(err).toBeNull()
+              expect(fieldValue).toBe "hello"
+              done()
+        
+                
+            
+          
+      
+      
+      
         
             
         

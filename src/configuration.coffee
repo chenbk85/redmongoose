@@ -35,8 +35,7 @@ module.exports.RedisConfiguration = class RedisConfiguration extends Configurati
 module.exports.MongoConfiguration = class MongoConfiguration extends Configuration
   constructor: (@rawConfiguration) ->
     @defaultParameters =
-      port: 27017
-      uri: "localhost"
+      uri: "mongodb://localhost/cacheTesting"
       password: null
       enabled: false
       mongoose_options: {}

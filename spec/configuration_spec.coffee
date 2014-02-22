@@ -56,10 +56,8 @@ describe "RedMongoose", ->
         it "should generate a MongoConfiguration instance", ->
           expect(config instanceof configuration.MongoConfiguration).toBeTruthy()
         describe "by default", ->
-          it "should have default port as 27017", ->
-            expect(config.getPort()).toBe 27017
-          it "should have the default uri as localhost", ->
-            expect(config.getURI()).toBe "localhost"
+          it "should have the default uri as mongodb://localhost/cacheTesting", ->
+            expect(config.getURI()).toBe "mongodb://localhost/cacheTesting"
           it "should have null password", ->
             expect(config.getPassword()).toBe null
           it "should have the default enabled value set to false", ->
