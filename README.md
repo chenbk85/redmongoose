@@ -1,12 +1,3 @@
-red-mongoose
-============
+![Red Mongoose](http://i.imgur.com/daQTmTq.png)
 
-A caching system backed by Redis and MongoDB
-
-##Documentation
-
-
-###Constructor
-
-####Input
-The constructor takes two parameters: redis
+####RedMongoose provides a common interface to Redis and MongoDB for caching information.
