@@ -122,6 +122,7 @@ class RedisCacheClient extends CacheClient
     @client.zcard key, cb
     
   addOrChangeMultipleMembersOfSortedSet: (key, scoresAndMembers,cb) ->
+    if scoresAndMembers.length is 0 then return cb null, 0
     commands = [key]
     for scoreAndMemberObject in scoresAndMembers
       commands.push scoreAndMemberObject.score
@@ -129,6 +130,7 @@ class RedisCacheClient extends CacheClient
     @client.zadd commands, cb
     
   getAmountOfMembersInScoreRange: (key, minScore, maxScore, cb) ->
+    #score is inclusive
     @client.zcount key, minScore, maxScore, cb
     
   getMembersInRankRange: (key, minRank, maxRank, cb) ->
@@ -136,7 +138,7 @@ class RedisCacheClient extends CacheClient
     
   getMembersInRankRangeWithScore: (key, minRank, maxRank, cb) ->
     @client.zrevrange key, minRank, maxRank, "WITHSCORES", (error, results) =>
-      @parseResultListAndExecuteCallback error, resultList, callback
+      @parseResultListAndExecuteCallback error, results, cb
       
   parseResultListAndExecuteCallback: (error, resultList, callback) ->
     if err? then return callback error, resultList
@@ -148,7 +150,7 @@ class RedisCacheClient extends CacheClient
     for elementIndex in elementIndices
       elementObject = 
         member: resultList[elementIndex]
-        score: resultList[elementIndex + 1]
+        score: parseFloat(resultList[elementIndex + 1])
       resultArray.push elementObject
     callback error, resultArray
     

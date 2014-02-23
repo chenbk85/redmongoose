@@ -42,7 +42,6 @@ describe "RedMongoose", ->
           client.addOrChangeMultipleMembersOfSortedSet "testKey", [higherRanked,lowerRanked], (err, numberAltered) ->
             expect(err).toBeNull()
             expect(numberAltered).toBe 2
-            done()
             client.getRankOfSortedSetMember "testKey","first", (err, rank) ->
               expect(err).toBeNull()
               expect(rank).toBe 0
@@ -59,7 +58,143 @@ describe "RedMongoose", ->
               expect(err).toBeNull()
               expect(score).toBe 40
               done()
+        it "should correctly calculate the cardinality of a sorted set", (done) ->
+          membersToInsert = [
+            {
+              score: 50
+              member: "first"
+            }
+            {
+              score: 20
+              member: "second"
+            }
+            {
+              score: 30
+              member: "third"
+            }
+          ]
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", membersToInsert, (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 3
             
+            client.getAmountOfMembersInSortedSet "testKey", (err, amount) ->
+              expect(err).toBeNull()
+              done()
+        it "should correctly add multiple members of a sorted set", (done) ->
+          membersToInsert = [
+            {
+              score: 50
+              member: "first"
+            }
+            {
+              score: 20
+              member: "second"
+            }
+            {
+              score: 30
+              member: "third"
+            }
+          ]
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", membersToInsert, (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 3
+            client.getScoreOfSortedSetMember "testKey", "first", (err, score) ->
+              expect(err).toBeNull()
+              expect(score).toBe 50
+              client.getScoreOfSortedSetMember "testKey", "second", (err, score) ->
+                expect(err).toBeNull()
+                expect(score).toBe 20
+                client.getScoreOfSortedSetMember "testKey", "third", (err,score) ->
+                  expect(err).toBeNull()
+                  expect(score).toBe 30
+                  done()
+        it "should handle adding no elements into a sorted set", (done) ->
+          membersToInsert = []
+          client.addOrChangeMultipleMembersOfSortedSet "testKey",membersToInsert,(err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 0
+            done()
+        
+        it "should get the correct amount of members in a score range", (done) ->
+          membersToInsert = [
+            {
+              score: 50
+              member: "first"
+            }
+            {
+              score: 20
+              member: "second"
+            }
+            {
+              score: 30
+              member: "third"
+            }
+          ]
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", membersToInsert, (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 3
+            client.getAmountOfMembersInScoreRange "testKey",30, 50, (err, numberOfMembers) ->
+              expect(err).toBeNull()
+              expect(numberOfMembers).toBe 2
+              client.getAmountOfMembersInScoreRange "testKey", 0, 50, (err, numberOfMembers) ->
+                expect(err).toBeNull()
+                expect(numberOfMembers).toBe 3
+                client.getAmountOfMembersInScoreRange "testKey",50,50, (err, numberOfMembers) ->
+                  expect(err).toBeNull()
+                  expect(numberOfMembers).toBe 1
+                  done()
+                  
+        it "should get the members in the rank range", (done) ->
+          membersToInsert = [
+            {
+              score: 50
+              member: "first"
+            }
+            {
+              score: 20
+              member: "second"
+            }
+            {
+              score: 30
+              member: "third"
+            }
+          ]
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", membersToInsert, (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 3
+            client.getMembersInRankRange "testKey", 0, 50, (err, members) ->
+              expect(err).toBeNull()
+              expectedArray = ["first","third","second"]
+              expect(_.isEqual members, expectedArray).toBe true
+              done()
+              
+        it "should get the members in the rank range with scores", (done) ->
+          membersToInsert = [
+            {
+              score: 50
+              member: "first"
+            }
+            {
+              score: 20
+              member: "second"
+            }
+            {
+              score: 30
+              member: "third"
+            }
+          ]
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", membersToInsert, (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 3
+            client.getMembersInRankRangeWithScore "testKey", 0, 50, (err, members) ->
+              equalMembers = 0
+              for memberOne in members
+                for memberTwo in membersToInsert
+                  if _.isEqual memberOne, memberTwo
+                    equalMembers++
+              expect(equalMembers).toBe membersToInsert.length
+              done()
+              
             
       describe "hashes", ->
         it "should not detect the existence of a nonexistent field in a nonexistent hash", (done) ->
