@@ -11,7 +11,56 @@ describe "RedMongoose", ->
       beforeEach (done) ->
         client.DESTROYALLKEYS ->
           done()
-
+          
+      describe "sorted sets", ->
+        it "should not detect the existence of a nonexistent sorted set member", (done) ->
+          client.sortedSetMemberExists "testKey", "testField", (err, exists) ->
+            expect(err).toBeNull()
+            expect(exists).toBe false
+            done()
+        it "should create a sorted set member", (done) ->
+          client.addOrChangeSortedSetMember "testkey", 50, "testField", (err, numberMembersAltered) ->
+            expect(err).toBeNull()
+            expect(numberMembersAltered).toBe 1
+            done()
+        it "should detect the existence of an existent sorted set member", (done) ->
+          client.addOrChangeSortedSetMember "testKey",50,"testField",(err, numberMembersAltered) ->
+            expect(err).toBeNull()
+            expect(numberMembersAltered).toBe 1
+            client.sortedSetMemberExists "testKey","testField", (err, exists) ->
+              expect(err).toBeNull()
+              expect(exists).toBe true
+              done()
+        it "should correctly rank sorted set members", (done) ->
+          higherRanked = 
+            score: 50
+            member: "first"
+          lowerRanked = 
+            score: 20
+            member: "second"
+            
+          client.addOrChangeMultipleMembersOfSortedSet "testKey", [higherRanked,lowerRanked], (err, numberAltered) ->
+            expect(err).toBeNull()
+            expect(numberAltered).toBe 2
+            done()
+            client.getRankOfSortedSetMember "testKey","first", (err, rank) ->
+              expect(err).toBeNull()
+              expect(rank).toBe 0
+              client.getRankOfSortedSetMember "testKey","second",(err,rank) ->
+                expect(err).toBeNull()
+                expect(rank).toBe 1
+                done()
+        it "should correctly get the score of a sorted set member", (done) ->
+          client.addOrChangeSortedSetMember "testkey", 40, "testField", (err, numberOfMembersAltered) ->
+            expect(err).toBeNull()
+            expect(numberOfMembersAltered).toBe 1
+            
+            client.getScoreOfSortedSetMember "testkey", "testField", (err, score) ->
+              expect(err).toBeNull()
+              expect(score).toBe 40
+              done()
+            
+            
       describe "hashes", ->
         it "should not detect the existence of a nonexistent field in a nonexistent hash", (done) ->
           client.hashFieldExists "testKey", "testField", (err, exists) ->
@@ -282,7 +331,6 @@ describe "RedMongoose", ->
           client.setHashFieldIfNotExists "testKeyNotExists", "testField","testValue", (err, result) ->
             expect(err).toBeNull()
             expect(result).toBeTruthy()
-            console.log "Done with first test!"
             client.getHashField "testKeyNotExists","testField", (err, field) ->
               expect(err).toBeNull()
               expect(field).toBe "testValue"

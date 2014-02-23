@@ -20,6 +20,7 @@ class MongoCacheClient extends CacheClient
   registerModels: -> 
     @Hash = mongoose.model 'Hash', hashSchema
     
+  
   destroyAllHashes: (cb) ->
     @client.collections.hashes.drop()
     cb()

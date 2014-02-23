@@ -97,6 +97,64 @@ class RedisCacheClient extends CacheClient
 
   setHashFieldIfNotExists: (key, field, value, cb) ->
     @client.hsetnx key, field, value, cb
+    
+  ###Sorted Sets###
+  
+  sortedSetMemberExists: (key, member, cb) ->
+    @client.zscore key, member, (error, score) ->
+      if error? then return cb error, score
+      if score is null then return cb error, false
+      cb error, true
+  
+  addOrChangeSortedSetMember: (key, score, member, cb) ->
+    @client.zadd key, score, member, cb
+    
+  getRankOfSortedSetMember: (key, member, cb) ->
+    @client.zrevrank key, member, cb
+    
+    
+  getScoreOfSortedSetMember: (key, member, cb) ->
+    @client.zscore key, member, (err, scoreString) ->
+      if err? or not scoreString? then return cb err, scoreString
+      cb err, parseFloat(scoreString)
+    
+  getAmountOfMembersInSortedSet: (key, cb) ->
+    @client.zcard key, cb
+    
+  addOrChangeMultipleMembersOfSortedSet: (key, scoresAndMembers,cb) ->
+    commands = [key]
+    for scoreAndMemberObject in scoresAndMembers
+      commands.push scoreAndMemberObject.score
+      commands.push scoreAndMemberObject.member
+    @client.zadd commands, cb
+    
+  getAmountOfMembersInScoreRange: (key, minScore, maxScore, cb) ->
+    @client.zcount key, minScore, maxScore, cb
+    
+  getMembersInRankRange: (key, minRank, maxRank, cb) ->
+    @client.zrevrange key, minRank, maxRank, cb
+    
+  getMembersInRankRangeWithScore: (key, minRank, maxRank, cb) ->
+    @client.zrevrange key, minRank, maxRank, "WITHSCORES", (error, results) =>
+      @parseResultListAndExecuteCallback error, resultList, callback
+      
+  parseResultListAndExecuteCallback: (error, resultList, callback) ->
+    if err? then return callback error, resultList
+    unless resultList then return callback error, resultList
+      
+    resultArray = []
+    elementIndices = (index for index in [0...resultList.length] by 2)
+    
+    for elementIndex in elementIndices
+      elementObject = 
+        member: resultList[elementIndex]
+        score: resultList[elementIndex + 1]
+      resultArray.push elementObject
+    callback error, resultArray
+    
+
+
+    
 
 
 module.exports = RedisCacheClient
